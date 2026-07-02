@@ -10,19 +10,23 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       -webkit-user-select: none; user-select: none;
       -webkit-tap-highlight-color: transparent; }
-    #root { position: relative; width: 100%; height: 100%; background: #000; }
+    .playerContainer { position: relative; width: 100%; height: 100%; background: #000; }
 
     #provider-frame {
       position: absolute; inset: 0; width: 100%; height: 100%;
       border: none;
     }
 
-    /* Brand overlay — tuned to cover their viewer badge */
-    #brand {
+    /* Brand overlay — exactly matches ProviderIframePlayer.module.css */
+    .brandOverlay {
       position: absolute;
-      top: 12px; right: 7px;
-      z-index: 10;
+      top: 12px;
+      right: 7px;
       pointer-events: none;
+      z-index: 5;
+    }
+
+    .brandBar {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -34,31 +38,19 @@
       width: 100px;
     }
 
-    #brand img {
-      width: 14px; height: 14px; object-fit: contain;
+    .brandLogo {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
       display: block;
     }
 
-    #brand span {
+    .brandText {
       font-size: 0.7rem;
       font-weight: 700;
       color: #fff;
       letter-spacing: 0.3px;
       line-height: 1;
-    }
-
-    /* Live dot */
-    #liveDot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background-color: #ccff00;
-      box-shadow: 0 0 6px rgba(204, 255, 0, 0.6);
-      animation: pulse 1.5s ease-in-out infinite;
-      flex-shrink: 0;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
     }
 
     /* loading / error states */
@@ -76,27 +68,20 @@
            gap: 12px; background: #000; color: #f87171;
            font-size: 14px; font-weight: 600; text-align: center; padding: 20px; }
     #err.show { display: flex; }
-
-    /* Security guard */
-    @media (max-width: 600px) {
-      #brand { padding: 6px 12px; width: auto; gap: 4px; }
-      #brand span { font-size: 0.6rem; }
-      #brand img { width: 12px; height: 12px; }
-      #liveDot { width: 6px; height: 6px; }
-    }
   </style>
 </head>
 <body>
-<div id="root">
-  <iframe id="provider-frame" allowfullscreen></iframe>
+<div class="playerContainer">
+  <iframe id="provider-frame" sandbox="allow-scripts allow-same-origin" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
   <div id="spinner" class="show"></div>
   <div id="err"><div id="errMsg">Channel unavailable</div></div>
 
-  <div id="brand">
-    <span id="liveDot"></span>
-    <img src="logo.png" alt="" />
-    <span>SoraScore</span>
+  <div class="brandOverlay">
+    <div class="brandBar">
+      <img src="logo.png" alt="" class="brandLogo" />
+      <span class="brandText">SoraScore</span>
+    </div>
   </div>
 </div>
 
@@ -133,8 +118,7 @@
       return;
     }
 
-    // Configure sandbox
-    frame.setAttribute('sandbox', SANDBOX);
+    frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
     frame.setAttribute('allow', 'autoplay; encrypted-media');
 
     // Load the provider embed
