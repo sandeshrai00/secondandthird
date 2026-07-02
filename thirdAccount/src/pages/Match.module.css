@@ -168,6 +168,14 @@
   color: #000 !important;
 }
 
+.providerBadge {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
 /* ── Info ─────────────────────────────────────────────── */
 .info {
   display: flex;

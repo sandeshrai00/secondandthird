@@ -50,7 +50,14 @@ export default function Match() {
   }, [slug]);
 
   const embedUrl = activeChannel
-    ? `${EMBED_BASE}/embed?ch=${encodeURIComponent(activeChannel)}`
+    ? (() => {
+        const ch = match.channels.find(c => c.channel_slug === activeChannel);
+        if (!ch) return null;
+        if (ch.stream_type === 'embed' && ch.embed_url) {
+          return `${EMBED_BASE}/provider-embed?url=${encodeURIComponent(ch.embed_url)}`;
+        }
+        return `${EMBED_BASE}/embed?ch=${encodeURIComponent(ch.channel_slug)}`;
+      })()
     : null;
 
   if (loading) {
@@ -133,6 +140,7 @@ export default function Match() {
                     onClick={() => setActiveChannel(c.channel_slug)}
                   >
                     {c.label || `Stream ${i + 1}`}
+                    {c.provider && <span className={styles.providerBadge}>{c.provider}</span>}
                   </button>
                 ))}
               </div>

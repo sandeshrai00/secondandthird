@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>SoraScore Provider</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; background: #000; overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-user-select: none; user-select: none;
+      -webkit-tap-highlight-color: transparent; }
+    #root { position: relative; width: 100%; height: 100%; background: #000; }
+
+    #provider-frame {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      border: none;
+    }
+
+    /* Brand overlay — tuned to cover their viewer badge */
+    #brand {
+      position: absolute;
+      top: 12px; right: 7px;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 8px 15px;
+      background: #000;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      width: 100px;
+    }
+
+    #brand img {
+      width: 14px; height: 14px; object-fit: contain;
+      display: block;
+    }
+
+    #brand span {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.3px;
+      line-height: 1;
+    }
+
+    /* Live dot */
+    #liveDot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background-color: #ccff00;
+      box-shadow: 0 0 6px rgba(204, 255, 0, 0.6);
+      animation: pulse 1.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* loading / error states */
+    #spinner { position: absolute; top: 50%; left: 50%; z-index: 5;
+               transform: translate(-50%,-50%);
+               width: 44px; height: 44px; border-radius: 50%;
+               border: 5px solid rgba(255,255,255,0.08);
+               border-top-color: #ccff00; display: none;
+               animation: spin 0.85s linear infinite; }
+    #spinner.show { display: block; }
+    @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+    #err { position: absolute; inset: 0; z-index: 5; display: none;
+           align-items: center; justify-content: center; flex-direction: column;
+           gap: 12px; background: #000; color: #f87171;
+           font-size: 14px; font-weight: 600; text-align: center; padding: 20px; }
+    #err.show { display: flex; }
+
+    /* Security guard */
+    @media (max-width: 600px) {
+      #brand { padding: 6px 12px; width: auto; gap: 4px; }
+      #brand span { font-size: 0.6rem; }
+      #brand img { width: 12px; height: 12px; }
+      #liveDot { width: 6px; height: 6px; }
+    }
+  </style>
+</head>
+<body>
+<div id="root">
+  <iframe id="provider-frame" allowfullscreen></iframe>
+
+  <div id="spinner" class="show"></div>
+  <div id="err"><div id="errMsg">Channel unavailable</div></div>
+
+  <div id="brand">
+    <span id="liveDot"></span>
+    <img src="logo.png" alt="" />
+    <span>SoraScore</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var frame = document.getElementById('provider-frame');
+  var spin  = document.getElementById('spinner');
+  var err   = document.getElementById('err');
+  var errM  = document.getElementById('errMsg');
+
+  // ─── Sandbox: blocks popups & top-navigation (ads), allows scripts + media ─
+  var SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-presentation';
+
+  // ─── Security guard ────────────────────────────────────────────────────────
+  document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+  // ─── Get URL from query param ─────────────────────────────────────────────
+  function getUrl() {
+    var p = new URLSearchParams(window.location.search);
+    return p.get('url') || '';
+  }
+
+  // ─── Show / hide helpers ──────────────────────────────────────────────────
+  function showSpin(v) { spin.classList.toggle('show', v); }
+  function showErr(msg) { errM.textContent = msg; err.classList.add('show'); showSpin(false); }
+
+  // ─── Init ─────────────────────────────────────────────────────────────────
+  function init() {
+    var embedUrl = getUrl();
+    if (!embedUrl) {
+      showErr('No embed URL. Add ?url=...');
+      return;
+    }
+
+    // Configure sandbox
+    frame.setAttribute('sandbox', SANDBOX);
+    frame.setAttribute('allow', 'autoplay; encrypted-media');
+
+    // Load the provider embed
+    frame.src = embedUrl;
+
+    // Hide spinner once loaded
+    frame.addEventListener('load', function() {
+      showSpin(false);
+    });
+
+    // Timeout fallback
+    setTimeout(function() {
+      if (spin.classList.contains('show')) {
+        showErr('Channel took too long to load.');
+      }
+    }, 15000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+}());
+</script>
+</body>
+</html>
