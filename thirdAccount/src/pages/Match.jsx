@@ -19,8 +19,14 @@ function formatTime(t) {
 function isFinished(eventTime) {
   if (!eventTime) return false;
   try {
-    const passed = Date.now() - new Date(eventTime).getTime();
-    return passed > 10800000; // 3 hours
+    // Parse the stored time, then shift to local midnight for comparison
+    const eventDate = new Date(eventTime.replace(/-/g, '/'));
+    const now = new Date();
+    // Use local date comparison: check if event date is before today
+    const eventLocal = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+    const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    // If event was yesterday or earlier, it's finished
+    return eventLocal < todayLocal;
   } catch { return false; }
 }
 
