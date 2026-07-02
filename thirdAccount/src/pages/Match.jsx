@@ -59,7 +59,7 @@ export default function Match() {
     ? (() => {
         const ch = match.channels.find(c => c.channel_slug === activeChannel);
         if (!ch) return null;
-        if (ch.stream_type === 'embed' && ch.embed_url) {
+        if (ch.stream_type === 'embed' || ch.embed_url) {
           return `${EMBED_BASE}/provider-embed?url=${encodeURIComponent(ch.embed_url)}`;
         }
         return `${EMBED_BASE}/embed?ch=${encodeURIComponent(ch.channel_slug)}`;
