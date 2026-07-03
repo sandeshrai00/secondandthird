@@ -316,7 +316,7 @@
   function buildUrl(slug) {
     var raw = 'https://inproviszon.st/' + slug + '.m3u8';
     return PUBLIC_API.indexOf('%%') === -1
-      ? PUBLIC_API + '/api/public/proxy-playlist?url=' + encodeURIComponent(raw)
+      ? PUBLIC_API + '/api/public/cr7?url=' + encodeURIComponent(raw)
       : raw;
   }
 
