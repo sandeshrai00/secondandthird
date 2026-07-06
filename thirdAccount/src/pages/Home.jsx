@@ -161,38 +161,16 @@ export default function Home() {
             </Link>
           );
 
+          const sortedMatches = [...live, ...upcoming, ...finished];
+
           return (
             <div key={genreId} className={styles.section}>
               <h2 className={styles.sectionTitle}>
                 {GENRES[genreId] || 'Other'}
               </h2>
-
-              {live.length > 0 && (
-                <div className={styles.subSection}>
-                  <h3 className={styles.subSectionTitle}>Live Now</h3>
-                  <div className={styles.row}>
-                    {live.map(renderCard)}
-                  </div>
-                </div>
-              )}
-
-              {upcoming.length > 0 && (
-                <div className={styles.subSection}>
-                  <h3 className={styles.subSectionTitle}>Upcoming</h3>
-                  <div className={styles.row}>
-                    {upcoming.map(renderCard)}
-                  </div>
-                </div>
-              )}
-
-              {finished.length > 0 && (
-                <div className={styles.subSection}>
-                  <h3 className={styles.subSectionTitle}>Finished</h3>
-                  <div className={styles.row}>
-                    {finished.map(renderCard)}
-                  </div>
-                </div>
-              )}
+              <div className={styles.row}>
+                {sortedMatches.map(renderCard)}
+              </div>
             </div>
           );
         })}
