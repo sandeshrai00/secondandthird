@@ -3,6 +3,8 @@ const BASE = import.meta.env.VITE_PUBLIC_API_URL || '';
 export const GENRES = {
   1: 'Soccer', 2: 'Basketball', 3: 'Tennis', 4: 'Ice Hockey',
   5: 'Motorsport', 6: 'Fighting', 7: 'Baseball', 8: 'American Football',
+  9: 'Rugby', 10: 'Volleyball', 11: 'Cricket', 12: 'Darts',
+  13: 'Snooker', 14: 'Golf', 15: 'Cycling',
 };
 
 export async function fetchMatches() {

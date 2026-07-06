@@ -27,8 +27,9 @@ function parseUSEasternTime(dateStr) {
 function getGenreName(g) {
   if (!g) return 'Other';
   const parsed = parseInt(g, 10);
-  if (!isNaN(parsed) && GENRES[parsed]) {
-    return GENRES[parsed];
+  // Check if it's purely a number (like '12' or '12.0')
+  if (!isNaN(parsed) && Number(g) == g) {
+    return GENRES[parsed] || 'Other';
   }
   const str = String(g);
   return str.charAt(0).toUpperCase() + str.slice(1);
