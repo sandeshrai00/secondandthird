@@ -184,7 +184,7 @@ export default function Home() {
                   </div>
                 </div>
               )}
-/* ── Section ─────────────────────────────────────────── */
+
               {finished.length > 0 && (
                 <div className={styles.subSection}>
                   <h3 className={styles.subSectionTitle}>Finished</h3>
