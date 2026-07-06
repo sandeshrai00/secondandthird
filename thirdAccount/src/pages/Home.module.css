@@ -48,8 +48,21 @@
   font-size: 1.15rem;
   font-weight: 800;
   color: var(--text);
-  margin: 0 0 12px 0;
+  margin: 0 0 16px 0;
   padding-left: 4px;
+}
+
+.subSection {
+  margin-bottom: 24px;
+}
+
+.subSectionTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 10px 4px;
 }
 
 /* ── Horizontal scrollable row ───────────────────────── */

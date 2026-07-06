@@ -120,52 +120,82 @@ export default function Home() {
       </header>
 
       <main className={styles.main}>
-        {sections.map(([genreId, sectionMatches]) => (
-          <div key={genreId} className={styles.section}>
-            <h2 className={styles.sectionTitle}>
-              {GENRES[genreId] || 'Other'}
-            </h2>
-            <div className={styles.row}>
-              {sectionMatches.map(m => {
-                const status = getTimeStatus(m.event_time);
-                return (
-                  <Link
-                    key={m.id}
-                    to={`/live/${m.custom_slug}`}
-                    className={styles.card}
-                    {...(m.logo_url ? { style: { backgroundImage: `url(${m.logo_url})` } } : {})}
-                  >
-                    <div className={styles.cardOverlay} />
-                    <div className={styles.cardTop}>
-                      {status.type === 'live' && (
-                        <div className={styles.liveBadge}>
-                          <div className={styles.liveDot} />
-                          LIVE
-                        </div>
-                      )}
-                      {status.type === 'upcoming' && (
-                        <div className={styles.upcomingBadge}>{status.text}</div>
-                      )}
-                    </div>
-                    <div className={styles.cardContent}>
-                      <h3 className={styles.cardTitle}>{m.title}</h3>
-                      <div className={styles.cardBottom}>
-                        {status.type === 'live' ? (
-                          <span className={styles.cardLive}>LIVE</span>
-                        ) : m.event_time ? (
-                          <span className={styles.cardTime}>{formatTime(m.event_time)}</span>
-                        ) : null}
-                        {status.type === 'finished' && (
-                          <div className={styles.finishedBadge}>FINISHED</div>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+        {sections.map(([genreId, sectionMatches]) => {
+          const withStatus = sectionMatches.map(m => ({ ...m, statusObj: getTimeStatus(m.event_time) }));
+          const live = withStatus.filter(m => m.statusObj.type === 'live');
+          const upcoming = withStatus.filter(m => m.statusObj.type === 'upcoming');
+          const finished = withStatus.filter(m => m.statusObj.type === 'finished');
+
+          const renderCard = (m) => (
+            <Link
+              key={m.id}
+              to={`/live/${m.custom_slug}`}
+              className={styles.card}
+              {...(m.logo_url ? { style: { backgroundImage: `url(${m.logo_url})` } } : {})}
+            >
+              <div className={styles.cardOverlay} />
+              <div className={styles.cardTop}>
+                {m.statusObj.type === 'live' && (
+                  <div className={styles.liveBadge}>
+                    <div className={styles.liveDot} />
+                    LIVE
+                  </div>
+                )}
+                {m.statusObj.type === 'upcoming' && (
+                  <div className={styles.upcomingBadge}>{m.statusObj.text}</div>
+                )}
+              </div>
+              <div className={styles.cardContent}>
+                <h3 className={styles.cardTitle}>{m.title}</h3>
+                <div className={styles.cardBottom}>
+                  {m.statusObj.type === 'live' ? (
+                    <span className={styles.cardLive}>LIVE</span>
+                  ) : m.event_time ? (
+                    <span className={styles.cardTime}>{formatTime(m.event_time)}</span>
+                  ) : null}
+                  {m.statusObj.type === 'finished' && (
+                    <div className={styles.finishedBadge}>FINISHED</div>
+                  )}
+                </div>
+              </div>
+            </Link>
+          );
+
+          return (
+            <div key={genreId} className={styles.section}>
+              <h2 className={styles.sectionTitle}>
+                {GENRES[genreId] || 'Other'}
+              </h2>
+              
+              {live.length > 0 && (
+                <div className={styles.subSection}>
+                  <h3 className={styles.subSectionTitle}>Live Now</h3>
+                  <div className={styles.row}>
+                    {live.map(renderCard)}
+                  </div>
+                </div>
+              )}
+
+              {upcoming.length > 0 && (
+                <div className={styles.subSection}>
+                  <h3 className={styles.subSectionTitle}>Upcoming</h3>
+                  <div className={styles.row}>
+                    {upcoming.map(renderCard)}
+                  </div>
+                </div>
+              )}
+
+              {finished.length > 0 && (
+                <div className={styles.subSection}>
+                  <h3 className={styles.subSectionTitle}>Finished</h3>
+                  <div className={styles.row}>
+                    {finished.map(renderCard)}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </main>
 
       <Footer />
