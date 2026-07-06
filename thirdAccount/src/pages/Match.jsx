@@ -6,15 +6,30 @@ import styles from './Match.module.css';
 
 const EMBED_BASE = import.meta.env.VITE_EMBED_URL || '';
 
+function parseUSEasternTime(dateStr) {
+  if (typeof dateStr !== 'string') return new Date(dateStr).getTime();
+  if (dateStr.endsWith('Z') || dateStr.includes('+')) return new Date(dateStr).getTime();
+  
+  const cleanStr = dateStr.replace(' ', 'T');
+  const naiveDate = new Date(cleanStr + 'Z');
+  
+  const month = naiveDate.getUTCMonth() + 1;
+  const dom = naiveDate.getUTCDate();
+  const dow = naiveDate.getUTCDay();
+  
+  let isDST = false;
+  if (month > 3 && month < 11) isDST = true;
+  else if (month === 3) isDST = (dom - dow) >= 8;
+  else if (month === 11) isDST = (dom - dow) <= 0;
+  
+  const offset = isDST ? '-04:00' : '-05:00';
+  return new Date(cleanStr + offset).getTime();
+}
+
 function formatTime(t) {
   if (!t) return null;
   try {
-    let dateStr = t;
-    if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+') && dateStr.includes(':')) {
-      dateStr = dateStr.replace(' ', 'T');
-      if (!dateStr.endsWith('Z')) dateStr += 'Z';
-    }
-    return new Date(dateStr).toLocaleString(undefined, {
+    return new Date(parseUSEasternTime(t)).toLocaleString(undefined, {
       weekday: 'short', month: 'short', day: 'numeric',
       hour: '2-digit', minute: '2-digit',
     });
@@ -24,12 +39,7 @@ function formatTime(t) {
 function isFinished(eventTime) {
   if (!eventTime) return false;
   try {
-    let dateStr = eventTime;
-    if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+') && dateStr.includes(':')) {
-      dateStr = dateStr.replace(' ', 'T');
-      if (!dateStr.endsWith('Z')) dateStr += 'Z';
-    }
-    const t = new Date(dateStr).getTime();
+    const t = parseUSEasternTime(eventTime);
     const now = Date.now();
     const diff = t - now;
     return diff < -10800000; // More than 3 hours passed

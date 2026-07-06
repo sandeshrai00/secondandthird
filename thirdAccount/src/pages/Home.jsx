@@ -4,15 +4,30 @@ import { fetchMatches, GENRES } from '../api';
 import Footer from '../components/Footer';
 import styles from './Home.module.css';
 
+function parseUSEasternTime(dateStr) {
+  if (typeof dateStr !== 'string') return new Date(dateStr).getTime();
+  if (dateStr.endsWith('Z') || dateStr.includes('+')) return new Date(dateStr).getTime();
+  
+  const cleanStr = dateStr.replace(' ', 'T');
+  const naiveDate = new Date(cleanStr + 'Z');
+  
+  const month = naiveDate.getUTCMonth() + 1;
+  const dom = naiveDate.getUTCDate();
+  const dow = naiveDate.getUTCDay();
+  
+  let isDST = false;
+  if (month > 3 && month < 11) isDST = true;
+  else if (month === 3) isDST = (dom - dow) >= 8;
+  else if (month === 11) isDST = (dom - dow) <= 0;
+  
+  const offset = isDST ? '-04:00' : '-05:00';
+  return new Date(cleanStr + offset).getTime();
+}
+
 function formatTime(t) {
   if (!t) return null;
   try {
-    let dateStr = t;
-    if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+') && dateStr.includes(':')) {
-      dateStr = dateStr.replace(' ', 'T');
-      if (!dateStr.endsWith('Z')) dateStr += 'Z';
-    }
-    return new Date(dateStr).toLocaleString(undefined, {
+    return new Date(parseUSEasternTime(t)).toLocaleString(undefined, {
       weekday: 'short', month: 'short', day: 'numeric',
       hour: '2-digit', minute: '2-digit',
     });
@@ -22,13 +37,8 @@ function formatTime(t) {
 function getTimeStatus(eventTime) {
   if (!eventTime) return { type: 'unknown' };
   try {
-    let dateStr = eventTime;
-    if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+') && dateStr.includes(':')) {
-      dateStr = dateStr.replace(' ', 'T');
-      if (!dateStr.endsWith('Z')) dateStr += 'Z';
-    }
     const now = Date.now();
-    const t = new Date(dateStr).getTime();
+    const t = parseUSEasternTime(eventTime);
     const diff = t - now;
     if (diff > 0) {
       const hours = Math.floor(diff / 3600000);
