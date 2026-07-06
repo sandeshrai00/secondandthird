@@ -7,19 +7,19 @@ import styles from './Home.module.css';
 function parseUSEasternTime(dateStr) {
   if (typeof dateStr !== 'string') return new Date(dateStr).getTime();
   if (dateStr.endsWith('Z') || dateStr.includes('+')) return new Date(dateStr).getTime();
-  
+
   const cleanStr = dateStr.replace(' ', 'T');
   const naiveDate = new Date(cleanStr + 'Z');
-  
+
   const month = naiveDate.getUTCMonth() + 1;
   const dom = naiveDate.getUTCDate();
   const dow = naiveDate.getUTCDay();
-  
+
   let isDST = false;
   if (month > 3 && month < 11) isDST = true;
   else if (month === 3) isDST = (dom - dow) >= 8;
   else if (month === 11) isDST = (dom - dow) <= 0;
-  
+
   const offset = isDST ? '-04:00' : '-05:00';
   return new Date(cleanStr + offset).getTime();
 }
@@ -166,7 +166,7 @@ export default function Home() {
               <h2 className={styles.sectionTitle}>
                 {GENRES[genreId] || 'Other'}
               </h2>
-              
+
               {live.length > 0 && (
                 <div className={styles.subSection}>
                   <h3 className={styles.subSectionTitle}>Live Now</h3>
@@ -184,7 +184,7 @@ export default function Home() {
                   </div>
                 </div>
               )}
-
+/* ── Section ─────────────────────────────────────────── */
               {finished.length > 0 && (
                 <div className={styles.subSection}>
                   <h3 className={styles.subSectionTitle}>Finished</h3>
