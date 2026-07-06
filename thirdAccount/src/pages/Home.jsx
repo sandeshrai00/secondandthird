@@ -7,7 +7,12 @@ import styles from './Home.module.css';
 function formatTime(t) {
   if (!t) return null;
   try {
-    return new Date(t).toLocaleString(undefined, {
+    let dateStr = t;
+    if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+') && dateStr.includes(':')) {
+      dateStr = dateStr.replace(' ', 'T');
+      if (!dateStr.endsWith('Z')) dateStr += 'Z';
+    }
+    return new Date(dateStr).toLocaleString(undefined, {
       weekday: 'short', month: 'short', day: 'numeric',
       hour: '2-digit', minute: '2-digit',
     });
@@ -17,8 +22,13 @@ function formatTime(t) {
 function getTimeStatus(eventTime) {
   if (!eventTime) return { type: 'unknown' };
   try {
+    let dateStr = eventTime;
+    if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+') && dateStr.includes(':')) {
+      dateStr = dateStr.replace(' ', 'T');
+      if (!dateStr.endsWith('Z')) dateStr += 'Z';
+    }
     const now = Date.now();
-    const t = new Date(eventTime).getTime();
+    const t = new Date(dateStr).getTime();
     const diff = t - now;
     if (diff > 0) {
       const hours = Math.floor(diff / 3600000);

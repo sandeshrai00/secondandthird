@@ -9,7 +9,12 @@ const EMBED_BASE = import.meta.env.VITE_EMBED_URL || '';
 function formatTime(t) {
   if (!t) return null;
   try {
-    return new Date(t).toLocaleString(undefined, {
+    let dateStr = t;
+    if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+') && dateStr.includes(':')) {
+      dateStr = dateStr.replace(' ', 'T');
+      if (!dateStr.endsWith('Z')) dateStr += 'Z';
+    }
+    return new Date(dateStr).toLocaleString(undefined, {
       weekday: 'short', month: 'short', day: 'numeric',
       hour: '2-digit', minute: '2-digit',
     });
@@ -19,14 +24,15 @@ function formatTime(t) {
 function isFinished(eventTime) {
   if (!eventTime) return false;
   try {
-    // Parse the stored time, then shift to local midnight for comparison
-    const eventDate = new Date(eventTime.replace(/-/g, '/'));
-    const now = new Date();
-    // Use local date comparison: check if event date is before today
-    const eventLocal = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-    const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    // If event was yesterday or earlier, it's finished
-    return eventLocal < todayLocal;
+    let dateStr = eventTime;
+    if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+') && dateStr.includes(':')) {
+      dateStr = dateStr.replace(' ', 'T');
+      if (!dateStr.endsWith('Z')) dateStr += 'Z';
+    }
+    const t = new Date(dateStr).getTime();
+    const now = Date.now();
+    const diff = t - now;
+    return diff < -10800000; // More than 3 hours passed
   } catch { return false; }
 }
 
