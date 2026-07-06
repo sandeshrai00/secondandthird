@@ -24,6 +24,16 @@ function parseUSEasternTime(dateStr) {
   return new Date(cleanStr + offset).getTime();
 }
 
+function getGenreName(g) {
+  if (!g) return 'Other';
+  const parsed = parseInt(g, 10);
+  if (!isNaN(parsed) && GENRES[parsed]) {
+    return GENRES[parsed];
+  }
+  const str = String(g);
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function formatTime(t) {
   if (!t) return null;
   try {
@@ -166,7 +176,7 @@ export default function Home() {
           return (
             <div key={genreId} className={styles.section}>
               <h2 className={styles.sectionTitle}>
-                {GENRES[genreId] || (genreId.charAt(0).toUpperCase() + genreId.slice(1))}
+                {getGenreName(genreId)}
               </h2>
               <div className={styles.row}>
                 {sortedMatches.map(renderCard)}
