@@ -166,7 +166,7 @@ export default function Home() {
           return (
             <div key={genreId} className={styles.section}>
               <h2 className={styles.sectionTitle}>
-                {GENRES[genreId] || 'Other'}
+                {GENRES[genreId] || (genreId.charAt(0).toUpperCase() + genreId.slice(1))}
               </h2>
               <div className={styles.row}>
                 {sortedMatches.map(renderCard)}
