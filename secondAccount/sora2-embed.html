@@ -72,7 +72,7 @@
 </head>
 <body>
 <div class="playerContainer">
-  <iframe id="provider-frame" sandbox="allow-scripts allow-same-origin" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  <iframe id="provider-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
 
   <div id="spinner" class="show"></div>
   <div id="err"><div id="errMsg">Channel unavailable</div></div>
@@ -94,7 +94,7 @@
   var err   = document.getElementById('err');
   var errM  = document.getElementById('errMsg');
 
-  // ─── Sandbox: blocks popups & top-navigation (ads), allows scripts + media ─
+  // ─── Sandbox: blocks popups/ads/top-navigation, allows scripts + media + autoplay ─
   var SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-presentation';
 
   // ─── Security guard ────────────────────────────────────────────────────────
@@ -118,8 +118,8 @@
       return;
     }
 
-    frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    frame.setAttribute('allow', 'autoplay; encrypted-media');
+    frame.setAttribute('sandbox', SANDBOX);
+    frame.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
 
     // Force autoplay query params
     if (embedUrl.indexOf('?') > -1) {
