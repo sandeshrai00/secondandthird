@@ -121,6 +121,13 @@
     frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
     frame.setAttribute('allow', 'autoplay; encrypted-media');
 
+    // Force autoplay query params
+    if (embedUrl.indexOf('?') > -1) {
+      embedUrl += '&autoplay=1&mute=0&autostart=true';
+    } else {
+      embedUrl += '?autoplay=1&mute=0&autostart=true';
+    }
+
     // Load the provider embed
     frame.src = embedUrl;
 
