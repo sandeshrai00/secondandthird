@@ -153,7 +153,7 @@ export default function Match() {
               )}
             </div>
 
-            {match.channels && match.channels.length > 1 && (
+            {match.channels && match.channels.length >= 1 && (
               <div className={styles.streams}>
                 {match.channels.map((c, i) => (
                   <button
