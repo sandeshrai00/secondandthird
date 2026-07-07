@@ -56,7 +56,7 @@ export default function Match() {
     setLoading(true);
     setError(null);
     setMatch(null);
-    setActiveChannel(null);
+    setActiveStream(null);
 
     fetchMatch(slug)
       .then(m => {
