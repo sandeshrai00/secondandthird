@@ -645,6 +645,20 @@
         }
       }
 
+      window.addEventListener('message', function (e) {
+        if (e.data === 'FORCE_REFRESH') {
+          console.log("Received FORCE_REFRESH from parent. Reloading stream...");
+          if (window._hls) {
+            window._hls.destroy();
+            window._hls = null;
+          }
+          if (window._retryInterval) {
+            clearInterval(window._retryInterval);
+          }
+          showSpin(true);
+          init();
+        }
+      });
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
       } else {

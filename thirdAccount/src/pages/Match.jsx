@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchMatch, GENRES } from '../api';
 import Footer from '../components/Footer';
@@ -51,6 +51,13 @@ export default function Match() {
   const [activeStream, setActiveStream] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const iframeRef = useRef(null);
+
+  const handleRefreshPlayer = () => {
+    if (iframeRef.current) {
+      iframeRef.current.contentWindow.postMessage('FORCE_REFRESH', '*');
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -139,6 +146,7 @@ export default function Match() {
             <div className={styles.player}>
               {embedUrl ? (
                 <iframe
+                  ref={iframeRef}
                   key={activeStream ? `${activeStream.channel_slug}-${activeStream.provider || 'system'}` : 'embed'}
                   src={embedUrl}
                   title={match.title}
@@ -163,6 +171,15 @@ export default function Match() {
                     {c.provider && <span className={styles.providerBadge}>{c.provider}</span>}
                   </button>
                 ))}
+                
+                <button 
+                  className={styles.streamBtn} 
+                  style={{ marginLeft: 'auto', backgroundColor: '#333', color: '#fff', border: '1px solid #444' }}
+                  onClick={handleRefreshPlayer}
+                  title="Reload Video Player"
+                >
+                  Refresh ⟳
+                </button>
               </div>
             )}
 
