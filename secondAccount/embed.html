@@ -394,14 +394,7 @@
       var uiVis = false;
       var idleTimer = null;
 
-      // ─── Persist mute/volume across channel switches ──────────────────────────
-      function savePrefs() { try { localStorage.setItem('ss_player', JSON.stringify({ muted: muted, volume: volume })); } catch (e) { } }
-      function loadPrefs() {
-        try {
-          var d = JSON.parse(localStorage.getItem('ss_player'));
-          if (d) { muted = d.muted === true; volume = typeof d.volume === 'number' ? d.volume : 0.5; }
-        } catch (e) { }
-      }
+
 
       // ─── UI sync helpers ───────────────────────────────────────────────────────
       function setIcon(el, h) { el.innerHTML = h; }
@@ -488,7 +481,6 @@
         v.muted = muted;
         if (!muted && volume === 0) { volume = 0.5; v.volume = 0.5; }
         syncMute();
-        savePrefs();
         showUi();
       });
 
@@ -499,7 +491,6 @@
         v.muted = volume === 0;
         muted = volume === 0;
         syncMute();
-        savePrefs();
       });
       vol.addEventListener('click', function (e) { e.stopPropagation(); });
 
@@ -551,7 +542,6 @@
         var url = buildUrl(slug);
         if (!url) { showErr('Stream Unavailable'); return; }
 
-        loadPrefs();
         v.muted = muted;
         v.volume = volume;
         syncMute(); syncPlay(); syncFs();
@@ -597,11 +587,9 @@
 
               } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                 mediaErrorCount++;
-                console.warn("Media error. Attempting recovery...");
                 if (mediaErrorCount <= 2) {
                   hls.recoverMediaError();
                 } else {
-                  console.error("Unrecoverable media error. Flushing RAM...");
                   window.location.reload();
                 }
               } else {
@@ -647,7 +635,6 @@
 
       window.addEventListener('message', function (e) {
         if (e.data === 'FORCE_REFRESH') {
-          console.log("Received FORCE_REFRESH from parent. Reloading stream...");
           if (window._hls) {
             window._hls.destroy();
             window._hls = null;

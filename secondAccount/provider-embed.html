@@ -137,6 +137,15 @@
     }, 15000);
   }
 
+  window.addEventListener('message', function (e) {
+    if (e.data === 'FORCE_REFRESH') {
+      showSpin(true);
+      err.classList.remove('show');
+      // Force the iframe to reload its source
+      frame.src = frame.src;
+    }
+  });
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
