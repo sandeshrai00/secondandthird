@@ -78,7 +78,8 @@ export default function Match() {
         if (ch.stream_type === 'embed') {
           return `${EMBED_BASE}/provider-embed?url=${encodeURIComponent(ch.embed_url)}`;
         }
-        return `${EMBED_BASE}/embed?ch=${encodeURIComponent(ch.channel_slug)}`;
+        const rawQuery = ch.raw_url ? `&raw=${encodeURIComponent(ch.raw_url)}` : '';
+        return `${EMBED_BASE}/embed?ch=${encodeURIComponent(ch.channel_slug)}${rawQuery}`;
       })()
     : null;
 

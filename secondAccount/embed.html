@@ -291,7 +291,12 @@
 
   // ─── PROXY URL ─────────────────────────────────────────────────────────────
   function buildUrl(slug) {
-    var raw = 'https://inproviszon.st/' + slug + '.m3u8';
+    var p = new URLSearchParams(window.location.search);
+    var dbRawUrl = p.get('raw');
+    
+    // Fallback if scraper hasn't run yet
+    var raw = dbRawUrl || ('https://inproviszon.st/' + slug + '.m3u8');
+    
     return PUBLIC_API.indexOf('%%') === -1
       ? PUBLIC_API + '/api/public/cr7?url=' + encodeURIComponent(raw)
       : raw;
