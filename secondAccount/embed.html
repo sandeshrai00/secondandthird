@@ -78,66 +78,28 @@
       display: none;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
       background: #000;
     }
 
-    .err-card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 32px 40px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      max-width: 90%;
-      width: 320px;
-      animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes popIn {
-      0% { opacity: 0; transform: scale(0.95) translateY(10px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .err-icon {
-      width: 42px;
-      height: 42px;
-      color: #f87171;
-      margin-bottom: 12px;
+    @keyframes breathe {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
     }
 
     #errMsg {
-      font-size: 18px;
+      font-size: 24px;
       font-weight: 600;
       color: #fff;
-      letter-spacing: -0.3px;
-      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
     }
 
     #errTimer {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.6);
-      font-weight: 500;
-      margin-bottom: 20px;
-    }
-
-    .progress-container {
-      width: 100%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    #errProgress {
-      height: 100%;
-      width: 0%;
-      background: #ccff00;
-      border-radius: 4px;
-      transition: width 0.05s linear;
-      box-shadow: 0 0 10px rgba(204, 255, 0, 0.5);
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 400;
+      animation: breathe 2s infinite ease-in-out;
     }
 
     #err.show {
@@ -374,16 +336,8 @@
     <div id="spinner" class="show"></div>
 
     <div id="err">
-      <div class="err-card">
-        <svg class="err-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <div id="errMsg">Connection lost</div>
-        <div id="errTimer">Reconnecting in 4s</div>
-        <div class="progress-container">
-          <div id="errProgress"></div>
-        </div>
-      </div>
+      <div id="errMsg">Connection lost.</div>
+      <div id="errTimer">Retrying in 4s</div>
     </div>
 
     <div id="center">
@@ -625,13 +579,9 @@
                 showSpin(true);
 
                 if (window._retryInterval) clearInterval(window._retryInterval);
-                var errProgress = document.getElementById('errProgress');
-                var totalDelay = delay;
                 
                 window._retryInterval = setInterval(function() {
-                  remaining -= 50;
-                  var pct = Math.max(0, Math.min(100, ((totalDelay - remaining) / totalDelay) * 100));
-                  if (errProgress) errProgress.style.width = pct + '%';
+                  remaining -= 100;
 
                   if (remaining <= 0) {
                     clearInterval(window._retryInterval);
@@ -639,7 +589,7 @@
                   } else {
                     errTimer.textContent = "Retrying in " + Math.ceil(remaining / 1000) + "s";
                   }
-                }, 50);
+                }, 100);
 
                 setTimeout(function () {
                   hls.startLoad();
