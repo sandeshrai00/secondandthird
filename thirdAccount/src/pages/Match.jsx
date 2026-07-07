@@ -145,15 +145,37 @@ export default function Match() {
           <>
             <div className={styles.player}>
               {embedUrl ? (
-                <iframe
-                  ref={iframeRef}
-                  key={activeStream ? `${activeStream.channel_slug}-${activeStream.provider || 'system'}` : 'embed'}
-                  src={embedUrl}
-                  title={match.title}
-                  className={styles.iframe}
-                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                  allowFullScreen
-                />
+                <>
+                  <iframe
+                    ref={iframeRef}
+                    key={activeStream ? `${activeStream.channel_slug}-${activeStream.provider || 'system'}` : 'embed'}
+                    src={embedUrl}
+                    title={match.title}
+                    className={styles.iframe}
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowFullScreen
+                  />
+                  <button 
+                    className={styles.streamBtn} 
+                    style={{ 
+                      position: 'absolute', 
+                      top: '12px', 
+                      left: '50%', 
+                      transform: 'translateX(-50%)', 
+                      backgroundColor: 'rgba(0,0,0,0.6)', 
+                      color: '#fff', 
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      backdropFilter: 'blur(4px)',
+                      zIndex: 10,
+                      padding: '6px 14px',
+                      fontSize: '12px'
+                    }}
+                    onClick={handleRefreshPlayer}
+                    title="Reload Video Player"
+                  >
+                    Refresh ⟳
+                  </button>
+                </>
               ) : (
                 <div className={styles.noStream}>No stream available</div>
               )}
@@ -171,15 +193,6 @@ export default function Match() {
                     {c.provider && <span className={styles.providerBadge}>{c.provider}</span>}
                   </button>
                 ))}
-                
-                <button 
-                  className={styles.streamBtn} 
-                  style={{ marginLeft: 'auto', backgroundColor: '#333', color: '#fff', border: '1px solid #444' }}
-                  onClick={handleRefreshPlayer}
-                  title="Reload Video Player"
-                >
-                  Refresh ⟳
-                </button>
               </div>
             )}
 
