@@ -42,7 +42,7 @@ function isFinished(eventTime) {
     const t = parseUSEasternTime(eventTime);
     const now = Date.now();
     const diff = t - now;
-    return diff < -10800000; // More than 3 hours passed
+    return diff < -14400000; // More than 4 hours passed
   } catch { return false; }
 }
 

@@ -59,7 +59,7 @@ function getTimeStatus(eventTime) {
       return { type: 'upcoming', text: `${mins}M` };
     }
     const passed = Math.abs(diff);
-    if (passed < 10800000) return { type: 'live', text: 'LIVE' };
+    if (passed < 14400000) return { type: 'live', text: 'LIVE' };
     return { type: 'finished', text: 'FINISHED' };
   } catch { return { type: 'unknown' }; }
 }
