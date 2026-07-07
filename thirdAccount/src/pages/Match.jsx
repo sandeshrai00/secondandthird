@@ -48,9 +48,9 @@ function isFinished(eventTime) {
 export default function Match() {
   const { slug } = useParams();
   const [match, setMatch] = useState(null);
+  const [activeStream, setActiveStream] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeChannel, setActiveChannel] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -63,22 +63,20 @@ export default function Match() {
         if (!m) { setError('Match not found.'); return; }
         setMatch(m);
         if (m.channels && m.channels.length > 0) {
-          setActiveChannel(m.channels[0].channel_slug);
+          setActiveStream(m.channels[0]);
         }
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, [slug]);
 
-  const embedUrl = activeChannel
+  const embedUrl = activeStream
     ? (() => {
-        const ch = match.channels.find(c => c.channel_slug === activeChannel);
-        if (!ch) return null;
-        if (ch.stream_type === 'embed') {
-          return `${EMBED_BASE}/provider-embed?url=${encodeURIComponent(ch.embed_url)}`;
+        if (activeStream.stream_type === 'embed') {
+          return `${EMBED_BASE}/provider-embed?url=${encodeURIComponent(activeStream.embed_url)}`;
         }
-        const rawQuery = ch.raw_url ? `&raw=${encodeURIComponent(ch.raw_url)}` : '';
-        return `${EMBED_BASE}/embed?ch=${encodeURIComponent(ch.channel_slug)}${rawQuery}`;
+        const rawQuery = activeStream.raw_url ? `&raw=${encodeURIComponent(activeStream.raw_url)}` : '';
+        return `${EMBED_BASE}/embed?ch=${encodeURIComponent(activeStream.channel_slug)}${rawQuery}`;
       })()
     : null;
 
@@ -141,7 +139,7 @@ export default function Match() {
             <div className={styles.player}>
               {embedUrl ? (
                 <iframe
-                  key={activeChannel}
+                  key={activeStream ? `${activeStream.channel_slug}-${activeStream.provider || 'system'}` : 'embed'}
                   src={embedUrl}
                   title={match.title}
                   className={styles.iframe}
@@ -157,9 +155,9 @@ export default function Match() {
               <div className={styles.streams}>
                 {match.channels.map((c, i) => (
                   <button
-                    key={c.channel_slug}
-                    className={`${styles.streamBtn} ${activeChannel === c.channel_slug ? styles.streamBtnActive : ''}`}
-                    onClick={() => setActiveChannel(c.channel_slug)}
+                    key={`${c.channel_slug}-${c.provider || 'system'}-${i}`}
+                    className={`${styles.streamBtn} ${activeStream === c ? styles.streamBtnActive : ''}`}
+                    onClick={() => setActiveStream(c)}
                   >
                     {c.label || `Stream ${i + 1}`}
                     {c.provider && <span className={styles.providerBadge}>{c.provider}</span>}
