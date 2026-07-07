@@ -80,7 +80,16 @@ export default function Match() {
   const embedUrl = activeStream
     ? (() => {
         if (activeStream.stream_type === 'embed') {
-          return `${EMBED_BASE}/provider-embed?url=${encodeURIComponent(activeStream.embed_url)}`;
+          // High-Tech Architecture: Route Dictionary (O(1) Lookup)
+          const routeMap = {
+            'sora 2': 'sora2-embed',
+            'sora2': 'sora2-embed'
+          };
+          
+          const providerKey = (activeStream.provider || '').toLowerCase().trim();
+          const route = routeMap[providerKey] || 'sora3-embed'; // Fallback to sora3
+          
+          return `${EMBED_BASE}/${route}?url=${encodeURIComponent(activeStream.embed_url)}`;
         }
         const rawQuery = activeStream.raw_url ? `&raw=${encodeURIComponent(activeStream.raw_url)}` : '';
         return `${EMBED_BASE}/embed?ch=${encodeURIComponent(activeStream.channel_slug)}${rawQuery}`;
