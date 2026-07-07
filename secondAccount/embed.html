@@ -294,12 +294,13 @@
     var p = new URLSearchParams(window.location.search);
     var dbRawUrl = p.get('raw');
     
-    // Fallback if scraper hasn't run yet
-    var raw = dbRawUrl || ('https://inproviszon.st/' + slug + '.m3u8');
+    if (!dbRawUrl) {
+      return null;
+    }
     
     return PUBLIC_API.indexOf('%%') === -1
-      ? PUBLIC_API + '/api/public/cr7?url=' + encodeURIComponent(raw)
-      : raw;
+      ? PUBLIC_API + '/api/public/cr7?url=' + encodeURIComponent(dbRawUrl)
+      : dbRawUrl;
   }
 
   function getSlug() {
@@ -313,6 +314,7 @@
     if (!slug) { showErr('No channel. Add ?ch=slug'); return; }
 
     var url = buildUrl(slug);
+    if (!url) { showErr('Stream Unavailable'); return; }
 
     loadPrefs();
     v.muted = muted;
