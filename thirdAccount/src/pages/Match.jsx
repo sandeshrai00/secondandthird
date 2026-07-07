@@ -40,9 +40,8 @@ function isFinished(eventTime) {
   if (!eventTime) return false;
   try {
     const t = parseUSEasternTime(eventTime);
-    const now = Date.now();
-    const diff = t - now;
-    return diff < -14400000; // More than 4 hours passed
+    // The backend auto-deletes finished matches. If it's in the DB, it's NOT finished.
+    return false;
   } catch { return false; }
 }
 

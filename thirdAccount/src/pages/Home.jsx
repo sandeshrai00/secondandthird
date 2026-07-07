@@ -58,9 +58,8 @@ function getTimeStatus(eventTime) {
       if (hours > 0) return { type: 'upcoming', text: `${hours}H ${mins}M` };
       return { type: 'upcoming', text: `${mins}M` };
     }
-    const passed = Math.abs(diff);
-    if (passed < 14400000) return { type: 'live', text: 'LIVE' };
-    return { type: 'finished', text: 'FINISHED' };
+    // If event is in the past, it's always LIVE until deleted from the DB
+    return { type: 'live', text: 'LIVE' };
   } catch { return { type: 'unknown' }; }
 }
 
