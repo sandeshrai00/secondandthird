@@ -46,7 +46,7 @@ function formatTime(t) {
 }
 
 function getTimeStatus(eventTime) {
-  if (!eventTime) return { type: 'unknown' };
+  if (!eventTime) return { type: 'live', text: 'LIVE' };
   try {
     const now = Date.now();
     const t = parseUSEasternTime(eventTime);
@@ -60,7 +60,7 @@ function getTimeStatus(eventTime) {
     }
     // If event is in the past, it's always LIVE until deleted from the DB
     return { type: 'live', text: 'LIVE' };
-  } catch { return { type: 'unknown' }; }
+  } catch { return { type: 'live', text: 'LIVE' }; }
 }
 
 export default function Home() {
