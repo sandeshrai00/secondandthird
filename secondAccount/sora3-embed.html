@@ -251,7 +251,7 @@
         e.stopPropagation();
         var ch = getSlug();
         if (ch) {
-          var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/sora3-embed?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen></iframe>';
+          var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/sora3-embed?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
           navigator.clipboard.writeText(iframeCode).then(function() {
             var oldLabel = shareText.textContent;
             shareText.textContent = 'Copied!';
