@@ -272,6 +272,22 @@
         }
       });
 
+      // ─── Auto-Landscape on Fullscreen ─────────────────────────────────────────
+      ['fullscreenchange', 'webkitfullscreenchange'].forEach(function(evt) {
+        document.addEventListener(evt, async function() {
+          var isFull = document.fullscreenElement || document.webkitFullscreenElement;
+          if (isFull) {
+            if (screen.orientation && screen.orientation.lock) {
+              try { await screen.orientation.lock('landscape'); } catch (e) {}
+            }
+          } else {
+            if (screen.orientation && screen.orientation.unlock) {
+              try { screen.orientation.unlock(); } catch (e) {}
+            }
+          }
+        });
+      });
+
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
       } else {
