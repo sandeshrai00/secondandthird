@@ -525,7 +525,7 @@
         e.stopPropagation();
         var ch = getSlug();
         if (ch) {
-          var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/embed.html?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen></iframe>';
+          var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/embed?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen></iframe>';
           navigator.clipboard.writeText(iframeCode).then(function() {
             var oldLabel = shareBtn.getAttribute('aria-label');
             shareBtn.setAttribute('aria-label', 'Copied!');
