@@ -89,8 +89,7 @@ export default function Match() {
           const providerKey = (activeStream.provider || '').toLowerCase().trim();
           const route = routeMap[providerKey] || 'sora3-embed'; // Fallback to sora3
           
-          // Secure ?ch=slug architecture for external providers
-          return `${EMBED_BASE}/${route}?ch=${encodeURIComponent(activeStream.channel_slug)}`;
+          return `${EMBED_BASE}/${route}?url=${encodeURIComponent(activeStream.embed_url)}`;
         }
         return `${EMBED_BASE}/embed?ch=${encodeURIComponent(activeStream.channel_slug)}`;
       })()

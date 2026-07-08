@@ -219,7 +219,7 @@
         }
 
         try {
-          var res = await fetch(PUBLIC_API + '/api/public/stream/' + slug + '?provider=sora2-embed');
+          var res = await fetch(PUBLIC_API + '/api/public/stream/' + slug);
           if (!res.ok) throw new Error('API error');
           var data = await res.json();
           if (!data || !data.embed_url) throw new Error('No stream found');
