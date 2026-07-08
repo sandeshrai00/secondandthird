@@ -355,6 +355,7 @@
         <div id="live">
           <div id="liveDot"></div>LIVE
         </div>
+        <button class="ibtn" id="shareBtn" aria-label="Copy Embed Code"></button>
         <button class="ibtn" id="pipBtn" aria-label="Picture-in-Picture"></button>
         <button class="ibtn" id="fsBtn" aria-label="Fullscreen"></button>
       </div>
@@ -365,7 +366,8 @@
     (function () {
       'use strict';
 
-      var PUBLIC_API = 'https://play.goholidays.me';
+      var STREAM_API = 'https://sorapublic.sorascorebackend.workers.dev';
+      var VPS_PROXY = 'https://play.goholidays.me';
 
       var ICON = {
         play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
@@ -375,6 +377,7 @@
         pip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><rect x="12" y="11" width="7" height="5" rx="1" ry="1"/></svg>',
         expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>',
         shrink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M16 3v3a2 2 0 0 0 2 2h3"/><path d="M8 21v-3a2 2 0 0 0-2-2H3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>',
+        share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>'
       };
 
       // ─── DOM refs ──────────────────────────────────────────────────────────────
@@ -389,6 +392,7 @@
       var bar = document.getElementById('bar');
       var mBtn = document.getElementById('muteBtn');
       var vol = document.getElementById('vol');
+      var shareBtn = document.getElementById('shareBtn');
       var pipBtn = document.getElementById('pipBtn');
       var fsBtn = document.getElementById('fsBtn');
 
@@ -515,6 +519,37 @@
         pipBtn.style.display = 'none';
       }
 
+      // ─── Share / Copy Embed ───────────────────────────────────────────────────
+      setIcon(shareBtn, ICON.share);
+      shareBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var ch = getSlug();
+        if (ch) {
+          var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/embed.html?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+          navigator.clipboard.writeText(iframeCode).then(function() {
+            var oldLabel = shareBtn.getAttribute('aria-label');
+            shareBtn.setAttribute('aria-label', 'Copied!');
+            // Show a simple tooltip styling temporarily
+            var tooltip = document.createElement('div');
+            tooltip.textContent = 'Copied to clipboard!';
+            tooltip.style.position = 'absolute';
+            tooltip.style.bottom = '50px';
+            tooltip.style.right = '50px';
+            tooltip.style.background = 'rgba(0,0,0,0.8)';
+            tooltip.style.color = '#ccff00';
+            tooltip.style.padding = '8px 12px';
+            tooltip.style.borderRadius = '4px';
+            tooltip.style.fontSize = '14px';
+            tooltip.style.zIndex = '1000';
+            root.appendChild(tooltip);
+            setTimeout(function() {
+              if(tooltip.parentNode) tooltip.parentNode.removeChild(tooltip);
+              shareBtn.setAttribute('aria-label', oldLabel);
+            }, 2000);
+          });
+        }
+      });
+
       // ─── Fullscreen ────────────────────────────────────────────────────────────
       fsBtn.addEventListener('click', function (e) {
         e.stopPropagation();
@@ -550,32 +585,27 @@
       // ─── Security guard ────────────────────────────────────────────────────────
       // Security guard removed for testing
 
-      // ─── PROXY URL ─────────────────────────────────────────────────────────────
-      function buildUrl(slug) {
-        var p = new URLSearchParams(window.location.search);
-        var dbRawUrl = p.get('raw');
-
-        if (!dbRawUrl) {
-          return null;
-        }
-
-        return PUBLIC_API.indexOf('%%') === -1
-          ? PUBLIC_API + '/api/public/cr7?url=' + encodeURIComponent(dbRawUrl)
-          : dbRawUrl;
-      }
-
       function getSlug() {
         var p = new URLSearchParams(window.location.search);
         return (p.get('ch') || '').replace(/[^a-zA-Z0-9_-]/g, '').trim();
       }
 
       // ─── INIT ──────────────────────────────────────────────────────────────────
-      function init() {
+      async function init() {
         var slug = getSlug();
         if (!slug) { showErr('No channel. Add ?ch=slug'); return; }
 
-        var url = buildUrl(slug);
-        if (!url) { showErr('Stream Unavailable'); return; }
+        var url;
+        try {
+          var res = await fetch(STREAM_API + '/api/public/stream/' + slug);
+          if (!res.ok) throw new Error('Stream fetch failed');
+          var data = await res.json();
+          if (!data.raw_url) { showErr('Stream Unavailable'); return; }
+          url = VPS_PROXY + '/api/public/cr7?url=' + encodeURIComponent(data.raw_url);
+        } catch (e) {
+          showErr('Connection Error');
+          return;
+        }
 
         v.muted = muted;
         v.volume = volume;

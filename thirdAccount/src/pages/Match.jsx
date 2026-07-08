@@ -91,8 +91,7 @@ export default function Match() {
           
           return `${EMBED_BASE}/${route}?url=${encodeURIComponent(activeStream.embed_url)}`;
         }
-        const rawQuery = activeStream.raw_url ? `&raw=${encodeURIComponent(activeStream.raw_url)}` : '';
-        return `${EMBED_BASE}/embed?ch=${encodeURIComponent(activeStream.channel_slug)}${rawQuery}`;
+        return `${EMBED_BASE}/embed?ch=${encodeURIComponent(activeStream.channel_slug)}`;
       })()
     : null;
 
