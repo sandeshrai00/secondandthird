@@ -160,7 +160,7 @@ export default function Match() {
                     src={embedUrl}
                     title={match.title}
                     className={styles.iframe}
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
                     allowFullScreen
                   />
                   <button 
