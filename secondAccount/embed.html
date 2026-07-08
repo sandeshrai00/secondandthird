@@ -328,6 +328,70 @@
         font-size: 11px;
       }
     }
+
+    /* Expanding Share Button (Top Left) */
+    #topShareBtn {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      height: 40px;
+      width: 40px;
+      background: rgba(20, 20, 20, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      padding: 0;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #fff;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #topShareBtn.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #topShareBtn:hover {
+      width: 140px;
+      background: rgba(40, 40, 40, 0.8);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    #topShareBtn .share-icon-wrapper {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    #topShareBtn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    #topShareBtn .share-text {
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #topShareBtn:hover .share-text {
+      opacity: 1;
+      transform: translateX(0);
+    }
   </style>
 </head>
 
@@ -342,6 +406,12 @@
       <div id="errTimer">Retrying in 4s</div>
     </div>
 
+    <!-- EXPANDING TOP-LEFT BUTTON -->
+    <button id="topShareBtn" aria-label="Copy Embed Code">
+      <div class="share-icon-wrapper"></div>
+      <span class="share-text">Copy Embed</span>
+    </button>
+
     <div id="center">
       <button id="playBtn" aria-label="Play/Pause"></button>
     </div>
@@ -355,7 +425,6 @@
         <div id="live">
           <div id="liveDot"></div>LIVE
         </div>
-        <button class="ibtn" id="shareBtn" aria-label="Copy Embed Code"></button>
         <button class="ibtn" id="pipBtn" aria-label="Picture-in-Picture"></button>
         <button class="ibtn" id="fsBtn" aria-label="Fullscreen"></button>
       </div>
@@ -392,7 +461,7 @@
       var bar = document.getElementById('bar');
       var mBtn = document.getElementById('muteBtn');
       var vol = document.getElementById('vol');
-      var shareBtn = document.getElementById('shareBtn');
+      var topShareBtn = document.getElementById('topShareBtn');
       var pipBtn = document.getElementById('pipBtn');
       var fsBtn = document.getElementById('fsBtn');
 
@@ -423,12 +492,14 @@
         uiVis = true;
         bar.classList.add('show');
         ctr.classList.add('show');
+        topShareBtn.classList.add('show');
         clearTimeout(idleTimer);
         if (playing) {
           idleTimer = setTimeout(function () {
             uiVis = false;
             bar.classList.remove('show');
             ctr.classList.remove('show');
+            topShareBtn.classList.remove('show');
           }, 4000);
         }
       }
@@ -437,6 +508,7 @@
         uiVis = false;
         bar.classList.remove('show');
         ctr.classList.remove('show');
+        topShareBtn.classList.remove('show');
         clearTimeout(idleTimer);
       }
 
@@ -520,31 +592,22 @@
       }
 
       // ─── Share / Copy Embed ───────────────────────────────────────────────────
-      setIcon(shareBtn, ICON.share);
-      shareBtn.addEventListener('click', function(e) {
+      var shareWrapper = topShareBtn.querySelector('.share-icon-wrapper');
+      var shareText = topShareBtn.querySelector('.share-text');
+      setIcon(shareWrapper, ICON.share);
+      
+      topShareBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         var ch = getSlug();
         if (ch) {
           var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/embed?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen></iframe>';
           navigator.clipboard.writeText(iframeCode).then(function() {
-            var oldLabel = shareBtn.getAttribute('aria-label');
-            shareBtn.setAttribute('aria-label', 'Copied!');
-            // Show a simple tooltip styling temporarily
-            var tooltip = document.createElement('div');
-            tooltip.textContent = 'Copied to clipboard!';
-            tooltip.style.position = 'absolute';
-            tooltip.style.bottom = '50px';
-            tooltip.style.right = '50px';
-            tooltip.style.background = 'rgba(0,0,0,0.8)';
-            tooltip.style.color = '#ccff00';
-            tooltip.style.padding = '8px 12px';
-            tooltip.style.borderRadius = '4px';
-            tooltip.style.fontSize = '14px';
-            tooltip.style.zIndex = '1000';
-            root.appendChild(tooltip);
+            var oldLabel = shareText.textContent;
+            shareText.textContent = 'Copied!';
+            shareText.style.color = '#ccff00';
             setTimeout(function() {
-              if(tooltip.parentNode) tooltip.parentNode.removeChild(tooltip);
-              shareBtn.setAttribute('aria-label', oldLabel);
+              shareText.textContent = oldLabel;
+              shareText.style.color = '#fff';
             }, 2000);
           });
         }
