@@ -123,6 +123,40 @@
     #err.show {
       display: flex;
     }
+
+    /* Static Share Button (Top Left) */
+    #topShareBtn {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      height: 40px;
+      background: rgba(20, 20, 20, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px 0 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #fff;
+      z-index: 20;
+    }
+
+    #topShareBtn:hover {
+      background: rgba(40, 40, 40, 0.8);
+      border-color: #ccff00;
+    }
+
+    #topShareBtn .share-text {
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      letter-spacing: 0.5px;
+      color: #ccff00;
+    }
   </style>
 </head>
 
@@ -142,6 +176,11 @@
         <span class="brandText">SoraScore</span>
       </div>
     </div>
+
+    <!-- STATIC TOP-LEFT BUTTON -->
+    <button id="topShareBtn" aria-label="Copy Embed Code">
+      <span class="share-text">&lt;&gt; Copy Embed</span>
+    </button>
   </div>
 
   <script>
@@ -153,16 +192,18 @@
       var err = document.getElementById('err');
       var errM = document.getElementById('errMsg');
 
+      var PUBLIC_API = 'https://sorapublic.sorascorebackend.workers.dev';
+
       // ─── Sandbox: blocks popups & top-navigation (ads), allows scripts + media ─
       var SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-presentation';
 
       // ─── Security guard ────────────────────────────────────────────────────────
       document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
-      // ─── Get URL from query param ─────────────────────────────────────────────
-      function getUrl() {
+      // ─── Get slug from query param ─────────────────────────────────────────────
+      function getSlug() {
         var p = new URLSearchParams(window.location.search);
-        return p.get('url') || '';
+        return (p.get('ch') || '').replace(/[^a-zA-Z0-9_-]/g, '').trim();
       }
 
       // ─── Show / hide helpers ──────────────────────────────────────────────────
@@ -170,38 +211,64 @@
       function showErr(msg) { errM.textContent = msg; err.classList.add('show'); showSpin(false); }
 
       // ─── Init ─────────────────────────────────────────────────────────────────
-      function init() {
-        var embedUrl = getUrl();
-        if (!embedUrl) {
-          showErr('No embed URL. Add ?url=...');
+      async function init() {
+        var slug = getSlug();
+        if (!slug) {
+          showErr('No channel. Add ?ch=slug');
           return;
         }
 
-        frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-        frame.setAttribute('allow', 'autoplay; encrypted-media');
+        try {
+          var res = await fetch(PUBLIC_API + '/api/public/stream/' + slug);
+          if (!res.ok) throw new Error('API error');
+          var data = await res.json();
+          if (!data || !data.embed_url) throw new Error('No stream found');
 
-        // Load the provider embed
-        frame.src = embedUrl;
+          frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+          frame.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write');
 
-        // Hide spinner once loaded
-        frame.addEventListener('load', function () {
-          showSpin(false);
-        });
+          frame.src = data.embed_url;
+          frame.addEventListener('load', function () {
+            showSpin(false);
+          });
 
-        // Timeout fallback
-        setTimeout(function () {
-          if (spin.classList.contains('show')) {
-            showErr('Channel took too long to load.');
-          }
-        }, 15000);
+          setTimeout(function () {
+            if (spin.classList.contains('show')) {
+              showErr('Channel took too long to load.');
+            }
+          }, 15000);
+        } catch (err) {
+          showErr('Stream offline');
+          console.error(err);
+        }
       }
+
+      // ─── Share / Copy Embed ───────────────────────────────────────────────────
+      var topShareBtn = document.getElementById('topShareBtn');
+      var shareText = topShareBtn.querySelector('.share-text');
+      
+      topShareBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var ch = getSlug();
+        if (ch) {
+          var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/sora2-embed?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen></iframe>';
+          navigator.clipboard.writeText(iframeCode).then(function() {
+            var oldLabel = shareText.textContent;
+            shareText.textContent = 'Copied!';
+            shareText.style.color = '#ccff00';
+            setTimeout(function() {
+              shareText.textContent = oldLabel;
+              shareText.style.color = '#fff';
+            }, 2000);
+          });
+        }
+      });
 
       window.addEventListener('message', function (e) {
         if (e.data === 'FORCE_REFRESH') {
           showSpin(true);
           err.classList.remove('show');
-          // Force the iframe to reload its source
-          frame.src = frame.src;
+          if (frame.src) frame.src = frame.src;
         }
       });
 
