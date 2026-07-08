@@ -504,7 +504,21 @@
         }
         showUi();
       });
-      document.addEventListener('fullscreenchange', syncFs);
+
+      document.addEventListener('fullscreenchange', function () {
+        syncFs();
+        if (document.fullscreenElement) {
+          // Lock to landscape when going fullscreen (mobile)
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(function () { });
+          }
+        } else {
+          // Unlock orientation when exiting fullscreen
+          if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+          }
+        }
+      });
 
       // ─── Video events ──────────────────────────────────────────────────────────
       v.addEventListener('waiting', function () { showSpin(true); });
