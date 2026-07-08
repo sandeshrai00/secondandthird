@@ -371,11 +371,9 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-    }
-
-    #topShareBtn svg {
-      width: 18px;
-      height: 18px;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 1px;
     }
 
     #topShareBtn .share-text {
@@ -408,7 +406,7 @@
 
     <!-- EXPANDING TOP-LEFT BUTTON -->
     <button id="topShareBtn" aria-label="Copy Embed Code">
-      <div class="share-icon-wrapper"></div>
+      <div class="share-icon-wrapper">&lt; &gt;</div>
       <span class="share-text">Copy Embed</span>
     </button>
 
@@ -445,8 +443,7 @@
         mute: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 001.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 00-1.06-1.06l-1.72 1.72-1.72-1.72z"/></svg>',
         pip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><rect x="12" y="11" width="7" height="5" rx="1" ry="1"/></svg>',
         expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>',
-        shrink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M16 3v3a2 2 0 0 0 2 2h3"/><path d="M8 21v-3a2 2 0 0 0-2-2H3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>',
-        share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>'
+        shrink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M16 3v3a2 2 0 0 0 2 2h3"/><path d="M8 21v-3a2 2 0 0 0-2-2H3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>'
       };
 
       // ─── DOM refs ──────────────────────────────────────────────────────────────
@@ -592,9 +589,7 @@
       }
 
       // ─── Share / Copy Embed ───────────────────────────────────────────────────
-      var shareWrapper = topShareBtn.querySelector('.share-icon-wrapper');
       var shareText = topShareBtn.querySelector('.share-text');
-      setIcon(shareWrapper, ICON.share);
       
       topShareBtn.addEventListener('click', function(e) {
         e.stopPropagation();
