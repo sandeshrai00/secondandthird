@@ -371,27 +371,7 @@
     }
 
     .viewer-count {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      height: 40px;
-      z-index: 50;
-      background: rgba(20, 20, 20, 0.4);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 0 16px;
-      border-radius: 20px;
-      color: #fff;
-      font-family: system-ui, sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
+      display: none; /* disabled */
     }
     .viewer-count.active { opacity: 1; }
     .viewer-dot {
@@ -796,21 +776,7 @@
       function formatNumber(num) {
         return num > 999 ? (num / 1000).toFixed(1) + 'k' : num;
       }
-      function connectTracker() {
-        try {
-          var ws = new WebSocket('wss://play.goholidays.me/stats');
-          ws.onmessage = function(event) {
-            var count = parseInt(event.data, 10);
-            if (!isNaN(count)) {
-              document.getElementById('viewerCount').classList.add('active');
-              document.getElementById('viewerNumber').textContent = formatNumber(count);
-            }
-          };
-          ws.onclose = function() { setTimeout(connectTracker, 5000); };
-          ws.onerror = function() { ws.close(); };
-        } catch (e) { /* fallback silently */ }
-      }
-      connectTracker();
+      // connectTracker(); // disabled
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
       } else {
