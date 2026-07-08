@@ -80,14 +80,10 @@ export default function Match() {
   const embedUrl = activeStream
     ? (() => {
         if (activeStream.stream_type === 'embed') {
-          // High-Tech Architecture: Route Dictionary (O(1) Lookup)
-          const routeMap = {
-            'sora 2': 'sora2-embed',
-            'sora2': 'sora2-embed'
-          };
-          
+          // Route based on the provider string stored in the DB
+          // 'sora2-embed' → sora2-embed player, everything else → sora3-embed
           const providerKey = (activeStream.provider || '').toLowerCase().trim();
-          const route = routeMap[providerKey] || 'sora3-embed'; // Fallback to sora3
+          const route = providerKey === 'sora2-embed' ? 'sora2-embed' : 'sora3-embed';
           
           return `${EMBED_BASE}/${route}?ch=${encodeURIComponent(activeStream.channel_slug)}`;
         }
