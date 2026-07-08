@@ -1,19 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>SoraScore Provider</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 100%; height: 100%; background: #000; overflow: hidden;
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      -webkit-user-select: none; user-select: none;
-      -webkit-tap-highlight-color: transparent; }
-    .playerContainer { position: relative; width: 100%; height: 100%; background: #000; }
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .playerContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
 
     #provider-frame {
-      position: absolute; inset: 0; width: 100%; height: 100%;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       border: none;
     }
 
@@ -33,7 +57,7 @@
       gap: 8px;
       padding: 8px 24px;
       background: #000;
-      border: 1px solid rgba(255,255,255,0.12);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 20px;
       width: 100px;
     }
@@ -54,104 +78,140 @@
     }
 
     /* loading / error states */
-    #spinner { position: absolute; top: 50%; left: 50%; z-index: 5;
-               transform: translate(-50%,-50%);
-               width: 44px; height: 44px; border-radius: 50%;
-               border: 5px solid rgba(255,255,255,0.08);
-               border-top-color: #ccff00; display: none;
-               animation: spin 0.85s linear infinite; }
-    #spinner.show { display: block; }
-    @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+    #spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 5;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 5px solid rgba(255, 255, 255, 0.08);
+      border-top-color: #ccff00;
+      display: none;
+      animation: spin 0.85s linear infinite;
+    }
 
-    #err { position: absolute; inset: 0; z-index: 5; display: none;
-           align-items: center; justify-content: center; flex-direction: column;
-           gap: 12px; background: #000; color: #f87171;
-           font-size: 14px; font-weight: 600; text-align: center; padding: 20px; }
-    #err.show { display: flex; }
+    #spinner.show {
+      display: block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: translate(-50%, -50%) rotate(360deg);
+      }
+    }
+
+    #err {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      background: #000;
+      color: #f87171;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #err.show {
+      display: flex;
+    }
   </style>
 </head>
+
 <body>
-<div class="playerContainer">
-  <iframe id="provider-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
+  <div class="playerContainer">
+    <iframe id="provider-frame" sandbox="allow-scripts allow-same-origin" allow="autoplay; encrypted-media"
+      allowfullscreen></iframe>
 
-  <div id="spinner" class="show"></div>
-  <div id="err"><div id="errMsg">Channel unavailable</div></div>
+    <div id="spinner" class="show"></div>
+    <div id="err">
+      <div id="errMsg">Channel unavailable</div>
+    </div>
 
-  <div class="brandOverlay">
-    <div class="brandBar">
-      <img src="logo.png" alt="" class="brandLogo" />
-      <span class="brandText">SoraScore</span>
+    <div class="brandOverlay">
+      <div class="brandBar">
+        <img src="logo.png" alt="" class="brandLogo" />
+        <span class="brandText">SoraScore</span>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-(function () {
-  'use strict';
+  <script>
+    (function () {
+      'use strict';
 
-  var frame = document.getElementById('provider-frame');
-  var spin  = document.getElementById('spinner');
-  var err   = document.getElementById('err');
-  var errM  = document.getElementById('errMsg');
+      var frame = document.getElementById('provider-frame');
+      var spin = document.getElementById('spinner');
+      var err = document.getElementById('err');
+      var errM = document.getElementById('errMsg');
 
-  // ─── Sandbox: blocks popups & top-navigation (ads), allows scripts + media ─
-  var SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-presentation';
+      // ─── Sandbox: blocks popups & top-navigation (ads), allows scripts + media ─
+      var SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-presentation';
 
-  // ─── Security guard ────────────────────────────────────────────────────────
-  document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+      // ─── Security guard ────────────────────────────────────────────────────────
+      document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
-  // ─── Get URL from query param ─────────────────────────────────────────────
-  function getUrl() {
-    var p = new URLSearchParams(window.location.search);
-    return p.get('url') || '';
-  }
-
-  // ─── Show / hide helpers ──────────────────────────────────────────────────
-  function showSpin(v) { spin.classList.toggle('show', v); }
-  function showErr(msg) { errM.textContent = msg; err.classList.add('show'); showSpin(false); }
-
-  // ─── Init ─────────────────────────────────────────────────────────────────
-  function init() {
-    var embedUrl = getUrl();
-    if (!embedUrl) {
-      showErr('No embed URL. Add ?url=...');
-      return;
-    }
-
-    frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    frame.setAttribute('allow', 'autoplay; encrypted-media');
-
-    // Load the provider embed
-    frame.src = embedUrl;
-
-    // Hide spinner once loaded
-    frame.addEventListener('load', function() {
-      showSpin(false);
-    });
-
-    // Timeout fallback
-    setTimeout(function() {
-      if (spin.classList.contains('show')) {
-        showErr('Channel took too long to load.');
+      // ─── Get URL from query param ─────────────────────────────────────────────
+      function getUrl() {
+        var p = new URLSearchParams(window.location.search);
+        return p.get('url') || '';
       }
-    }, 15000);
-  }
 
-  window.addEventListener('message', function (e) {
-    if (e.data === 'FORCE_REFRESH') {
-      showSpin(true);
-      err.classList.remove('show');
-      // Force the iframe to reload its source
-      frame.src = frame.src;
-    }
-  });
+      // ─── Show / hide helpers ──────────────────────────────────────────────────
+      function showSpin(v) { spin.classList.toggle('show', v); }
+      function showErr(msg) { errM.textContent = msg; err.classList.add('show'); showSpin(false); }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-}());
-</script>
+      // ─── Init ─────────────────────────────────────────────────────────────────
+      function init() {
+        var embedUrl = getUrl();
+        if (!embedUrl) {
+          showErr('No embed URL. Add ?url=...');
+          return;
+        }
+
+        frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+        frame.setAttribute('allow', 'autoplay; encrypted-media');
+
+        // Load the provider embed
+        frame.src = embedUrl;
+
+        // Hide spinner once loaded
+        frame.addEventListener('load', function () {
+          showSpin(false);
+        });
+
+        // Timeout fallback
+        setTimeout(function () {
+          if (spin.classList.contains('show')) {
+            showErr('Channel took too long to load.');
+          }
+        }, 15000);
+      }
+
+      window.addEventListener('message', function (e) {
+        if (e.data === 'FORCE_REFRESH') {
+          showSpin(true);
+          err.classList.remove('show');
+          // Force the iframe to reload its source
+          frame.src = frame.src;
+        }
+      });
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    }());
+  </script>
 </body>
+
 </html>
