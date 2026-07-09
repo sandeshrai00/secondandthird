@@ -300,7 +300,14 @@
       function formatNumber(num) {
         return num > 999 ? (num / 1000).toFixed(1) + 'k' : num;
       }
-      // connectTracker(); // disabled
+      function connectTracker() {
+        try {
+          var ws = new WebSocket('wss://play.goholidays.me/stats/ws');
+          ws.onclose = function() { setTimeout(connectTracker, 5000); };
+          ws.onerror = function() { ws.close(); };
+        } catch (e) {}
+      }
+      connectTracker();
 
       // ─── Auto-Landscape on Fullscreen ─────────────────────────────────────────
       ['fullscreenchange', 'webkitfullscreenchange'].forEach(function(evt) {
