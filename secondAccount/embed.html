@@ -673,7 +673,13 @@
         showUi();
 
         if (Hls.isSupported()) {
-          var hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+          var hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: true,
+            maxBufferLength: 10,
+            maxMaxBufferLength: 15,
+            liveSyncDurationCount: 3
+          });
           window._hls = hls;
 
           var retryCount = 0;
