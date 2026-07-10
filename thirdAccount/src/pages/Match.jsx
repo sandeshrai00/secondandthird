@@ -87,7 +87,9 @@ export default function Match() {
           
           return `${EMBED_BASE}/${route}?ch=${encodeURIComponent(activeStream.channel_slug)}`;
         }
-        return `${EMBED_BASE}/embed?ch=${encodeURIComponent(activeStream.channel_slug)}`;
+        // Embed-only: raw HLS channels are no longer supported, fall back to the
+        // sora2-embed player for any non-embed channel.
+        return `${EMBED_BASE}/sora2-embed?ch=${encodeURIComponent(activeStream.channel_slug)}`;
       })()
     : null;
 

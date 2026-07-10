@@ -4,8 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>SoraScore Player</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.16/dist/hls.min.js"></script>
+  <title>SoraScore Provider</title>
   <style>
     *,
     *::before,
@@ -27,7 +26,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    #root {
+    .playerContainer {
       position: relative;
       width: 100%;
       height: 100%;
@@ -35,22 +34,56 @@
       touch-action: manipulation;
     }
 
-    #v {
+    #provider-frame {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      border: none;
+    }
+
+    /* Brand overlay — exactly matches ProviderIframePlayer.module.css */
+    .brandOverlay {
+      position: absolute;
+      top: 12px;
+      right: 7px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .brandBar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 24px;
       background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      width: 100px;
+    }
+
+    .brandLogo {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
       display: block;
     }
 
-    /* spinner */
+    .brandText {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.3px;
+      line-height: 1;
+    }
+
+    /* loading / error states */
     #spinner {
       position: absolute;
       top: 50%;
       left: 50%;
-      z-index: 10;
+      z-index: 5;
       transform: translate(-50%, -50%);
       width: 44px;
       height: 44px;
@@ -71,263 +104,25 @@
       }
     }
 
-    /* error overlay */
     #err {
       position: absolute;
       inset: 0;
-      z-index: 10;
+      z-index: 5;
       display: none;
       align-items: center;
       justify-content: center;
       flex-direction: column;
+      gap: 12px;
       background: #000;
-    }
-
-    @keyframes breathe {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 1; }
-    }
-
-    #errMsg {
-      font-size: 24px;
+      color: #f87171;
+      font-size: 14px;
       font-weight: 600;
-      color: #ccff00;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-    }
-
-    #errTimer {
-      font-size: 16px;
-      color: rgba(204, 255, 0, 0.7);
-      font-weight: 400;
-      animation: breathe 2s infinite ease-in-out;
+      text-align: center;
+      padding: 20px;
     }
 
     #err.show {
       display: flex;
-    }
-
-    /* center play/pause button — always pointer-events: none when hidden */
-    #center {
-      position: absolute;
-      inset: 0;
-      z-index: 5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-
-    #center.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    #playBtn {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(204, 255, 0, 0.9);
-      color: #000;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 32px rgba(204, 255, 0, 0.4);
-      touch-action: manipulation;
-    }
-
-    #playBtn:active {
-      transform: scale(0.92);
-    }
-
-    #playBtn svg {
-      width: 40px;
-      height: 40px;
-      pointer-events: none;
-    }
-
-    /* bottom control bar — pointer-events: none when hidden */
-    #bar {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 5;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 40px 20px 20px;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
-      pointer-events: none;
-      opacity: 0;
-      transform: translateY(16px);
-      transition: opacity 0.25s ease, transform 0.25s ease;
-    }
-
-    #bar.show {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    .bar-left {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .bar-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .bar-left {
-      position: relative;
-    }
-
-    .ibtn {
-      background: none;
-      border: none;
-      color: #ccff00;
-      cursor: pointer;
-      padding: 10px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      outline: none;
-      touch-action: manipulation;
-    }
-
-    .ibtn:active {
-      transform: scale(0.9);
-    }
-
-    .ibtn svg {
-      width: 26px;
-      height: 26px;
-      pointer-events: none;
-    }
-
-    #fsBtn svg,
-    #pipBtn svg {
-      width: 22px;
-      height: 22px;
-    }
-
-    /* inline volume slider — always visible inside the bar */
-    #vol {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 50px;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 4px;
-      outline: none;
-      cursor: pointer;
-      touch-action: none;
-    }
-
-    #vol::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #ccff00;
-      cursor: pointer;
-      border: none;
-    }
-
-    #vol::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: none;
-      background: #ccff00;
-      cursor: pointer;
-    }
-
-    /* LIVE badge */
-    #live {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #ccff00;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-    }
-
-    #liveDot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #ccff00;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(204, 255, 0, 0.7);
-      }
-
-      70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 6px rgba(204, 255, 0, 0);
-      }
-
-      100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(204, 255, 0, 0);
-      }
-    }
-
-    @media (max-width: 600px) {
-      #playBtn {
-        width: 56px;
-        height: 56px;
-      }
-
-      #playBtn svg {
-        width: 32px;
-        height: 32px;
-      }
-
-      #bar {
-        padding: 30px 10px 12px;
-      }
-
-      .bar-left,
-      .bar-right {
-        gap: 10px;
-      }
-
-      #vol {
-        width: 40px;
-      }
-
-      .ibtn svg {
-        width: 22px;
-        height: 22px;
-      }
-
-      #fsBtn svg,
-      #pipBtn svg {
-        width: 18px;
-        height: 18px;
-      }
-
-      #live {
-        font-size: 11px;
-      }
     }
 
     /* Static Share Button (Top Left) */
@@ -336,7 +131,7 @@
       top: 15px;
       left: 15px;
       height: 40px;
-      background: rgba(20, 20, 20, 0.6);
+      background: rgba(20, 20, 20, 0.4);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -348,13 +143,6 @@
       transition: all 0.2s ease;
       color: #fff;
       z-index: 20;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #topShareBtn.show {
-      opacity: 1;
-      pointer-events: auto;
     }
 
     #topShareBtn:hover {
@@ -392,14 +180,20 @@
 </head>
 
 <body>
-  <div id="root">
-    <video id="v" autoplay playsinline></video>
+  <div class="playerContainer">
+    <iframe id="provider-frame" sandbox="allow-scripts allow-same-origin" allow="autoplay; encrypted-media; picture-in-picture"
+      allowfullscreen></iframe>
 
     <div id="spinner" class="show"></div>
-
     <div id="err">
-      <div id="errMsg">Connection lost.</div>
-      <div id="errTimer">Retrying in 4s</div>
+      <div id="errMsg">Channel unavailable</div>
+    </div>
+
+    <div class="brandOverlay">
+      <div class="brandBar">
+        <img src="logo.png" alt="" class="brandLogo" />
+        <span class="brandText">SoraScore</span>
+      </div>
     </div>
 
     <!-- STATIC TOP-LEFT BUTTON -->
@@ -412,193 +206,77 @@
       <div class="viewer-dot"></div>
       <span id="viewerNumber">...</span>&nbsp;Watching
     </div>
-
-    <div id="center">
-      <button id="playBtn" aria-label="Play/Pause"></button>
-    </div>
-
-    <div id="bar">
-      <div class="bar-left">
-        <button class="ibtn" id="muteBtn" aria-label="Mute/Unmute"></button>
-        <input type="range" id="vol" min="0" max="1" step="0.05" value="0.5" aria-label="Volume" />
-      </div>
-      <div class="bar-right">
-        <div id="live">
-          <div id="liveDot"></div>LIVE
-        </div>
-        <button class="ibtn" id="pipBtn" aria-label="Picture-in-Picture"></button>
-        <button class="ibtn" id="fsBtn" aria-label="Fullscreen"></button>
-      </div>
-    </div>
   </div>
 
   <script>
     (function () {
       'use strict';
 
-      var STREAM_API = 'https://sorapublic.sorascorebackend.workers.dev';
-      var VPS_PROXY = 'https://play.goholidays.me';
-
-      var ICON = {
-        play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
-        pause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>',
-        sound: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06z"/><path d="M18.584 5.106a.75.75 0 011.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 11-1.06-1.06 8.25 8.25 0 000-11.668.75.75 0 010-1.06z"/><path d="M15.932 7.757a.75.75 0 011.061 0 6 6 0 010 8.486.75.75 0 01-1.06-1.061 4.5 4.5 0 000-6.364.75.75 0 010-1.06z"/></svg>',
-        mute: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 001.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 00-1.06-1.06l-1.72 1.72-1.72-1.72z"/></svg>',
-        pip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><rect x="12" y="11" width="7" height="5" rx="1" ry="1"/></svg>',
-        expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>',
-        shrink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M16 3v3a2 2 0 0 0 2 2h3"/><path d="M8 21v-3a2 2 0 0 0-2-2H3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>'
-      };
-
-      // ─── DOM refs ──────────────────────────────────────────────────────────────
-      var root = document.getElementById('root');
-      var v = document.getElementById('v');
+      var frame = document.getElementById('provider-frame');
       var spin = document.getElementById('spinner');
       var err = document.getElementById('err');
       var errM = document.getElementById('errMsg');
-      var errTimer = document.getElementById('errTimer');
-      var ctr = document.getElementById('center');
-      var pBtn = document.getElementById('playBtn');
-      var bar = document.getElementById('bar');
-      var mBtn = document.getElementById('muteBtn');
-      var vol = document.getElementById('vol');
-      var topShareBtn = document.getElementById('topShareBtn');
-      var pipBtn = document.getElementById('pipBtn');
-      var fsBtn = document.getElementById('fsBtn');
 
-      // ─── State ─────────────────────────────────────────────────────────────────
-      var playing = true;
-      var muted = true;
-      var volume = 0.5;
-      var uiVis = false;
-      var idleTimer = null;
+      var PUBLIC_API = 'https://sorapublic.sorascorebackend.workers.dev';
 
+      // ─── Sandbox: blocks popups & top-navigation (ads), allows scripts + media ─
+      var SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-presentation';
 
+      // ─── Security guard ────────────────────────────────────────────────────────
+      document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
-      // ─── UI sync helpers ───────────────────────────────────────────────────────
-      function setIcon(el, h) { el.innerHTML = h; }
+      // ─── Get slug from query param ─────────────────────────────────────────────
+      function getSlug() {
+        var p = new URLSearchParams(window.location.search);
+        return (p.get('ch') || '').replace(/[^a-zA-Z0-9_-]/g, '').trim();
+      }
 
+      // ─── Show / hide helpers ──────────────────────────────────────────────────
       function showSpin(v) { spin.classList.toggle('show', v); }
-
       function showErr(msg) { errM.textContent = msg; err.classList.add('show'); showSpin(false); }
 
-      function syncMute() { setIcon(mBtn, muted || volume === 0 ? ICON.mute : ICON.sound); vol.value = muted ? 0 : volume; }
-
-      function syncPlay() { setIcon(pBtn, playing ? ICON.pause : ICON.play); }
-
-      function syncFs() { setIcon(fsBtn, document.fullscreenElement ? ICON.shrink : ICON.expand); }
-
-      function showUi() {
-        if (uiVis) return;
-        uiVis = true;
-        bar.classList.add('show');
-        ctr.classList.add('show');
-        topShareBtn.classList.add('show');
-        clearTimeout(idleTimer);
-        if (playing) {
-          idleTimer = setTimeout(function () {
-            uiVis = false;
-            bar.classList.remove('show');
-            ctr.classList.remove('show');
-            topShareBtn.classList.remove('show');
-          }, 4000);
+      // ─── Init ─────────────────────────────────────────────────────────────────
+      async function init() {
+        var slug = getSlug();
+        if (!slug) {
+          showErr('No channel. Add ?ch=slug');
+          return;
         }
-      }
 
-      function hideUi() {
-        uiVis = false;
-        bar.classList.remove('show');
-        ctr.classList.remove('show');
-        topShareBtn.classList.remove('show');
-        clearTimeout(idleTimer);
-      }
+        try {
+          var res = await fetch(PUBLIC_API + '/api/public/provider/' + slug + '?provider=sora2-embed');
+          if (!res.ok) throw new Error('API error');
+          var data = await res.json();
+          if (!data || !data.embed_url) throw new Error('No stream found');
 
-      // ─── Click handlers (NativeHlsPlayer pattern) ─────────────────────────────
-      // Tapping the container (not on buttons/controls) toggles UI visibility
-      root.addEventListener('click', function (e) {
-        // If click is on a button or inside controls, ignore
-        if (e.target.closest('button') || e.target.closest('#live')) return;
-        if (uiVis) {
-          hideUi();
-        } else {
-          showUi();
+          frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+          frame.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write');
+
+          frame.src = data.embed_url;
+          frame.addEventListener('load', function () {
+            showSpin(false);
+          });
+
+          setTimeout(function () {
+            if (spin.classList.contains('show')) {
+              showErr('Channel took too long to load.');
+            }
+          }, 15000);
+        } catch (err) {
+          showErr('Stream offline');
+          console.error(err);
         }
-      });
-
-      // Desktop only: mouse move shows UI (skip on touch devices to avoid conflict with click)
-      var isTouchDevice = 'ontouchstart' in window;
-      if (!isTouchDevice) {
-        root.addEventListener('mousemove', function () {
-          if (!uiVis) showUi();
-        });
-        root.addEventListener('mouseleave', function () {
-          if (playing) hideUi();
-        });
-      }
-
-      // ─── Play / Pause ──────────────────────────────────────────────────────────
-      pBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (playing) {
-          if (window._hls) window._hls.stopLoad();
-          v.pause();
-          playing = false;
-        } else {
-          showSpin(true);
-          if (window._hls) {
-            window._hls.startLoad();
-            if (window._hls.liveSyncPosition !== null) v.currentTime = window._hls.liveSyncPosition;
-          }
-          v.play().catch(function () { });
-          playing = true;
-        }
-        syncPlay();
-        showUi();
-      });
-
-      // ─── Mute / Volume ──────────────────────────────────────────────────────────
-      mBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        muted = !muted;
-        v.muted = muted;
-        if (!muted && volume === 0) { volume = 0.5; v.volume = 0.5; }
-        syncMute();
-        showUi();
-      });
-
-      vol.addEventListener('input', function (e) {
-        e.stopPropagation();
-        volume = parseFloat(this.value);
-        v.volume = volume;
-        v.muted = volume === 0;
-        muted = volume === 0;
-        syncMute();
-      });
-      vol.addEventListener('click', function (e) { e.stopPropagation(); });
-
-      // ─── Picture-in-Picture ────────────────────────────────────────────────────
-      if (document.pictureInPictureEnabled) {
-        setIcon(pipBtn, ICON.pip);
-        pipBtn.addEventListener('click', function (e) {
-          e.stopPropagation();
-          if (document.pictureInPictureElement) {
-            document.exitPictureInPicture().catch(function () { });
-          } else {
-            v.requestPictureInPicture().catch(function () { });
-          }
-          showUi();
-        });
-      } else {
-        pipBtn.style.display = 'none';
       }
 
       // ─── Share / Copy Embed ───────────────────────────────────────────────────
+      var topShareBtn = document.getElementById('topShareBtn');
       var shareText = topShareBtn.querySelector('.share-text');
       
       topShareBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         var ch = getSlug();
         if (ch) {
-          var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/embed?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+          var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/sora2-embed?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
           navigator.clipboard.writeText(iframeCode).then(function() {
             var oldLabel = shareText.textContent;
             shareText.textContent = 'Copied!';
@@ -611,174 +289,11 @@
         }
       });
 
-      // ─── Fullscreen ────────────────────────────────────────────────────────────
-      fsBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (!document.fullscreenElement) {
-          root.requestFullscreen().catch(function () { });
-        } else {
-          document.exitFullscreen().catch(function () { });
-        }
-        showUi();
-      });
-
-      document.addEventListener('fullscreenchange', function () {
-        syncFs();
-        if (document.fullscreenElement) {
-          // Lock to landscape when going fullscreen (mobile)
-          if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape').catch(function () { });
-          }
-        } else {
-          // Unlock orientation when exiting fullscreen
-          if (screen.orientation && screen.orientation.unlock) {
-            screen.orientation.unlock();
-          }
-        }
-      });
-
-      // ─── Video events ──────────────────────────────────────────────────────────
-      v.addEventListener('waiting', function () { showSpin(true); });
-      v.addEventListener('playing', function () { showSpin(false); playing = true; syncPlay(); });
-      v.addEventListener('canplay', function () { showSpin(false); });
-      v.addEventListener('pause', function () { playing = false; syncPlay(); });
-
-      // ─── Security guard ────────────────────────────────────────────────────────
-      // Security guard removed for testing
-
-      function getSlug() {
-        var p = new URLSearchParams(window.location.search);
-        return (p.get('ch') || '').replace(/[^a-zA-Z0-9_-]/g, '').trim();
-      }
-
-      // ─── INIT ──────────────────────────────────────────────────────────────────
-      async function init() {
-        var slug = getSlug();
-        if (!slug) { showErr('No channel. Add ?ch=slug'); return; }
-
-        var url;
-        try {
-          var res = await fetch(STREAM_API + '/api/public/stream/' + slug);
-          if (!res.ok) throw new Error('Stream fetch failed');
-          var data = await res.json();
-          if (!data.raw_url) { showErr('Stream Unavailable'); return; }
-          url = VPS_PROXY + '/api/public/cr7?url=' + encodeURIComponent(data.raw_url);
-        } catch (e) {
-          showErr('Connection Error');
-          return;
-        }
-
-        v.muted = muted;
-        v.volume = volume;
-        syncMute(); syncPlay(); syncFs();
-        showUi();
-
-        if (Hls.isSupported()) {
-          var hls = new Hls({
-            enableWorker: true,
-            lowLatencyMode: true,
-            maxBufferLength: 15,
-            maxMaxBufferLength: 20,
-            backBufferLength: 10,
-            liveSyncDurationCount: 3,
-            liveDurationInfinity: true
-          });
-          window._hls = hls;
-
-          var retryCount = 0;
-          var mediaErrorCount = 0;
-
-          hls.on(Hls.Events.ERROR, function (e, data) {
-            if (data.fatal) {
-              if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-                retryCount++;
-                var baseDelay = Math.min(10000, Math.pow(2, retryCount) * 1000);
-                var jitter = Math.random() * 1000;
-                var delay = baseDelay + jitter;
-                var remaining = delay;
-                
-                v.muted = true; // Mute the player during network drop
-                errM.textContent = "Connection lost";
-                err.classList.add('show');
-                showSpin(true);
-
-                if (window._retryInterval) clearInterval(window._retryInterval);
-                
-                window._retryInterval = setInterval(function() {
-                  remaining -= 100;
-
-                  if (remaining <= 0) {
-                    clearInterval(window._retryInterval);
-                    errTimer.textContent = "Reconnecting...";
-                  } else {
-                    errTimer.textContent = "Retrying in " + Math.ceil(remaining / 1000) + "s";
-                  }
-                }, 100);
-
-                setTimeout(function () {
-                  hls.startLoad();
-                }, delay);
-
-              } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-                mediaErrorCount++;
-                if (mediaErrorCount <= 2) {
-                  hls.recoverMediaError();
-                } else {
-                  window.location.reload();
-                }
-              } else {
-                showErr(data.details);
-              }
-            }
-          });
-
-          hls.on(Hls.Events.MANIFEST_PARSED, function () {
-            retryCount = 0;
-            mediaErrorCount = 0;
-            if (window._retryInterval) clearInterval(window._retryInterval);
-            errTimer.textContent = "";
-            err.classList.remove('show');
-            showSpin(false);
-            v.muted = muted; // Restore user's actual mute preference
-            
-            if (hls.liveSyncPosition !== null) {
-              v.currentTime = hls.liveSyncPosition;
-            }
-            v.play().catch(function () { });
-          });
-
-          hls.on(Hls.Events.FRAG_LOADED, function () {
-             retryCount = 0;
-             if (window._retryInterval) clearInterval(window._retryInterval);
-             errTimer.textContent = "";
-             err.classList.remove('show');
-             v.muted = muted;
-          });
-
-          hls.attachMedia(v);
-          hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-            hls.loadSource(url);
-          });
-        } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
-          v.src = url;
-          v.play().catch(function () { });
-        } else {
-          showErr('HLS not supported.');
-        }
-      }
-
       window.addEventListener('message', function (e) {
         if (e.data === 'FORCE_REFRESH') {
-          if (window._hls) {
-            window._hls.detachMedia();
-            window._hls.destroy();
-            window._hls = null;
-          }
-          if (window._retryInterval) {
-            clearInterval(window._retryInterval);
-          }
           showSpin(true);
-          init();
+          err.classList.remove('show');
+          if (frame.src) frame.src = frame.src;
         }
       });
 
@@ -794,6 +309,23 @@
         } catch (e) {}
       }
       connectTracker();
+
+      // ─── Auto-Landscape on Fullscreen ─────────────────────────────────────────
+      ['fullscreenchange', 'webkitfullscreenchange'].forEach(function(evt) {
+        document.addEventListener(evt, async function() {
+          var isFull = document.fullscreenElement || document.webkitFullscreenElement;
+          if (isFull) {
+            if (screen.orientation && screen.orientation.lock) {
+              try { await screen.orientation.lock('landscape'); } catch (e) {}
+            }
+          } else {
+            if (screen.orientation && screen.orientation.unlock) {
+              try { screen.orientation.unlock(); } catch (e) {}
+            }
+          }
+        });
+      });
+
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
       } else {
