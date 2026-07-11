@@ -81,15 +81,15 @@ export default function Match() {
     ? (() => {
         if (activeStream.stream_type === 'embed') {
           // Route based on the provider string stored in the DB
-          // 'sora2-embed' → sora2-embed player, everything else → sora3-embed
+          // 'sora-a-embed' → sora-a-embed player, everything else → sora-b-embed
           const providerKey = (activeStream.provider || '').toLowerCase().trim();
-          const route = providerKey === 'sora2-embed' ? 'sora2-embed' : 'sora3-embed';
+          const route = providerKey === 'sora-a-embed' ? 'sora-a-embed' : 'sora-b-embed';
           
           return `${EMBED_BASE}/${route}?ch=${encodeURIComponent(activeStream.channel_slug)}`;
         }
         // Embed-only: raw HLS channels are no longer supported, fall back to the
-        // sora2-embed player for any non-embed channel.
-        return `${EMBED_BASE}/sora2-embed?ch=${encodeURIComponent(activeStream.channel_slug)}`;
+        // sora-a-embed player for any non-embed channel.
+        return `${EMBED_BASE}/sora-a-embed?ch=${encodeURIComponent(activeStream.channel_slug)}`;
       })()
     : null;
 

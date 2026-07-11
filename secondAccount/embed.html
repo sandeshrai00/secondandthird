@@ -244,7 +244,7 @@
         }
 
         try {
-          var res = await fetch(PUBLIC_API + '/api/public/provider/' + slug + '?provider=sora2-embed');
+          var res = await fetch(PUBLIC_API + '/api/public/provider/' + slug + '?provider=sora-a-embed');
           if (!res.ok) throw new Error('API error');
           var data = await res.json();
           if (!data || !data.embed_url) throw new Error('No stream found');
@@ -276,7 +276,7 @@
         e.stopPropagation();
         var ch = getSlug();
         if (ch) {
-          var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/sora2-embed?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+          var iframeCode = '<iframe src="https://emebedplayersora.pages.dev/sora-a-embed?ch=' + ch + '" width="100%" height="100%" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
           navigator.clipboard.writeText(iframeCode).then(function() {
             var oldLabel = shareText.textContent;
             shareText.textContent = 'Copied!';
